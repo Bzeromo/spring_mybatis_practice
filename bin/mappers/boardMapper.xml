@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bzeromo.board.model.dao.BoardDao">
+	<!-- 매핑 시키고 싶은 것을 넣어놓고 사용한다. 프로퍼티명과 컬럼명이 겹치는 것은 굳이 없어도 된다. -->
+	<resultMap type="Board" id="boardMap">
+		<result column="id" property="id"/>
+		<result column="writer" property="writer"/>
+		<result column="title" property="title"/>
+		<result column="content" property="content"/>
+		<result column="view_cnt" property="viewCnt"/>
+		<result column="reg_date" property="regDate"/>
+	</resultMap>
+	
+	<!-- 전체글 조회 -->
+	<!-- 누구(BoardDao의 메서드 중)와 매핑 시킬 것인가? -->
+	<!-- 반환형으로 풀패키지명을 작성한다. 타이핑을 줄이기 위해 typeAliases를 사용할 수 있다. -->
+	<select id="selectAll" resultType="Board">
+	<!-- 클래스의 필드명과 테이블의 컬럼명이 다를 때 발생하는 오류를 막기 위해 컬럼병의 별칭으로 필드명을 넣는다. -->
+		SELECT id, content, writer, title, view_cnt AS viewCnt, date_format(reg_date, '%y-%m-%d') AS regDate 
+		FROM board;
+	</select>
+	
+	<!-- 상세글 조회 -->
+	<!-- 메서드에 들어오는 파라미터의 자료형을 지정해준다. 매개변수가 여러개면 DTO 혹은 map 인터페이스를 활용한다. -->
+	<!-- #{} 안에 들어가는 단어는 사실 어느 것이든 상관없다. 다만 가독성을 위해 잘 써주자. -->
+	<select id="selectOne" resultMap="boardMap" parameterType="int">
+		SELECT *
+		FROM board
+		WHERE id = #{id};
+	</select>
+	
+	<!-- 게시글 등록 -->
+	<insert id="insertBoard" parameterType="Board">
+			INSERT INTO board(title, writer, content)
+			VALUES (#{title}, #{writer}, #{content})
+	</insert>
+	
+	<!-- 게시글 삭제 -->
+	<delete id="deleteBoard" parameterType="int">
+		DELETE FROM board
+		WHERE id = #{id};
+	</delete>
+	
+	<!-- 조회수 증가 -->
+	<update id="updateViewCnt" parameterType="int">
+		UPDATE board
+		SET view_cnt = view_cnt + 1
+		WHERE id = #{id};
+	</update>
+	
+	<!-- 게시글 수정 -->
+	<!-- 수정 날짜까지 적용 -->
+	<update id="updateBoard" parameterType="Board">
+		UPDATE board
+		SET title = #{title}, content = #{content}, reg_date = now()
+		WHERE id = #{id};
+	</update>
+</mapper>
